@@ -1,0 +1,16 @@
+{
+  "name": "mc-recorder",
+  "version": "1.0.0",
+  "description": "Record Minecraft gameplay using Mineflayer and Prismarine Viewer",
+  "main": "recorder.js",
+  "scripts": {
+    "start": "node recorder.js"
+  },
+  "dependencies": {
+    "mineflayer": "^4.23.0",
+    "prismarine-viewer": "^1.29.0",
+    "minecraft-protocol": "^1.50.0",
+    "canvas": "^2.11.2",
+    "node-canvas-webgl": "^0.3.0"
+  }
+}
