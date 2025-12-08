@@ -1,89 +1,33 @@
 services:
-  opencode:
-    image: node:20-slim
-    working_dir: /app
-    volumes:
-      - .:/app
-      - ~/.local/share/opencode:/root/.local/share/opencode
-      - ~/.local/share/opencode:/root/.opencode
-      - ~/.local/share/opencode:/root/.config/opencode
-    # Install opencode-ai and run the server
-    # We pin the version to ensure stability as requested. 
-    # Using 'latest' for now but user can change this.
-    # SECURITY NOTE:
-    # --hostname 0.0.0.0 binds to all interfaces INSIDE the container so the 'bot' service can reach it.
-    # The 'ports' mapping below strictly binds it to 127.0.0.1 on the host, preventing public internet access.
-    command: sh -c "export NODE_OPTIONS='--max-old-space-size=4096' && npm install -g opencode-ai && opencode serve --port 4096 --hostname 0.0.0.0"
-    ports:
-      # Binds ONLY to localhost. External IPs cannot access this port.
-      - "127.0.0.1:4096:4096"
-
-  mc:
+  mc-server:
     image: itzg/minecraft-server
-    tty: true
-    stdin_open: true
-    ports:
-      - "25565:25565"
     environment:
       EULA: "TRUE"
-      VERSION: "1.20.4"
       ONLINE_MODE: "FALSE"
-      MOTD: "§9OpenCode §fMinecraft §7(Docker)"
-      SERVER_NAME: "OpenCode Server"
-    volumes:
-      - ./minecraft-data:/data
+      VERSION: "1.20.4"
+      MOTD: "Recording Server"
+    ports:
+      - "25565:25565"
     healthcheck:
-      test: "mc-health"
+      test: ["CMD", "mc-health"]
       interval: 10s
       timeout: 5s
       retries: 20
 
-  backups:
-    image: itzg/mc-backup
-    environment:
-      BACKUP_INTERVAL: "24h"
-      RCON_HOST: mc
-    volumes:
-      - ./minecraft-data:/data:ro
-      - ./minecraft-backups:/backups
-    depends_on:
-      - mc
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "127.0.0.1:6379:6379"
-    volumes:
-      - ./redis-data:/data
-    command: redis-server --appendonly yes
-
-  bot:
-    build: .
-    volumes:
-      - .:/app
-    environment:
-      - MC_HOST=mc
-      - MC_PORT=25565
-      - OPENCODE_URL=http://opencode:4096
-      - SKIP_OPENCODE_SERVER=true
-      - OPENCODE_API_KEY=${OPENCODE_API_KEY}
-      - OPENCODE_PROVIDER=${OPENCODE_PROVIDER}
-      - OPENCODE_MODEL=${OPENCODE_MODEL}
-      - REDIS_URL=redis://redis:6379
-    ports:
-      - "3000:3000"
-    depends_on:
-      - opencode
-      - mc
-      - redis
-
   recorder:
     build: ./recorder
     environment:
-      MC_HOST: mc
+      MC_HOST: mc-server
       MC_PORT: 25565
     volumes:
       - ./recordings:/output
     depends_on:
-      mc:
+      mc-server:
         condition: service_healthy
+
+  web:
+    build: ./web
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./recordings:/app/recordings

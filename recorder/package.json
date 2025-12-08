@@ -4,13 +4,14 @@
   "description": "Record Minecraft gameplay using Mineflayer and Prismarine Viewer",
   "main": "recorder.js",
   "scripts": {
-    "start": "node recorder.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "mineflayer": "^4.23.0",
-    "prismarine-viewer": "^1.29.0",
-    "minecraft-protocol": "^1.50.0",
     "canvas": "^2.11.2",
-    "node-canvas-webgl": "^0.3.0"
+    "minecraft-protocol": "^1.50.0",
+    "mineflayer": "4.33.0",
+    "mineflayer-pathfinder": "^2.4.5",
+    "node-canvas-webgl": "^0.3.0",
+    "prismarine-viewer": "1.33.0"
   }
 }
